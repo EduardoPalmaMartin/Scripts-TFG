@@ -1,0 +1,124 @@
+---
+title: "Análisis ANOVA anidado"
+author: "Eduardo Palma Martín"
+date: "20 de junio de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r , echo=F , results=F, message=FALSE}
+if(!require(nlme)){install.packages("nlme")}
+if(!require(multcomp)){install.packages("multcomp")}
+if(!require(multcompView)){install.packages("multcompView")}
+if(!require(lsmeans)){install.packages("lsmeans")}
+if(!require(lme4)){install.packages("lme4")}
+if(!require(lmerTest)){install.packages("lmerTest")}
+if(!require(TukeyC)){install.packages("TukeyC")}
+if (!require(readxl)) install.packages('readxl')
+if (!require(dplyr)) install.packages('dplyr')
+
+set.seed(42)
+```
+
+```{r datos1}
+#Seleccionar datos para el análisis
+df <- datos1[,c(3, 4, i)]
+variable <- names(df[3])
+names(df) <- c("VI", "VG", "VD")
+df[[1]] <- as.factor(df[[1]])
+df[[2]] <- as.factor(df[[2]])
+```
+
+# ANOVA anidado con el modelo linear nlme para la variable `r variable`
+
+```{r}
+library(nlme)
+
+model = lme(VD ~ VI, random=~1|VG, 
+            data=df, 
+            method="REML")
+
+anova.lme(model, 
+          type="sequential", 
+          adjustSigma = FALSE)
+```
+
+# Post-hoc con modelo lnme para la variable `r variable`
+
+```{r}
+library(multcomp)
+
+posthoc = glht(model,
+               linfct = mcp(VI="Tukey"))
+
+mcs = summary(posthoc,
+              test=adjusted("single-step"))
+
+mcs
+```
+
+##Grupos homogéneos para la variable `r variable`
+
+```{r}
+cld(mcs,
+    level=0.05,
+    decreasing=TRUE)
+```
+
+\newpage
+
+# ANOVA anidado con el modelo linear lme4 para la variable `r variable`
+
+```{r}
+library(lme4)
+library(lmerTest)
+
+model2 = lmer(VD ~ VI+(1|VG), 
+            data=df, 
+            REML=TRUE)
+
+anova(model2)
+ranova(model2)
+difflsmeans(model2, 
+            test.effs="VI")
+```
+
+# Post-hoc con modelo lme4 para la variable `r variable`
+
+```{r}
+library(multcomp)
+
+posthoc = glht(model2,
+
+               linfct = mcp(VI="Tukey"))
+
+mcs = summary(posthoc,
+
+              test=adjusted("single-step"))
+
+mcs
+
+cld(mcs,
+    level=0.05,
+    decreasing=TRUE)
+```
+
+\newpage
+
+#Media y desviación típica para la variable `r variable`
+
+```{r}
+library(dplyr)
+
+group_by(df, VI) %>%
+  summarise(
+    count = n(),
+    mean = mean(VD, na.rm = TRUE),
+    sd = sd(VD, na.rm = TRUE)
+  )
+```
+
+

@@ -1,0 +1,97 @@
+---
+title: "PCA1"
+author: "Eduardo Palma Martín"
+date: "8 de junio de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r , echo=F , results=F, message=FALSE}
+if (!require(FactoMineR)) install.packages('FactoMineR')
+library("FactoMineR")
+if (!require(factoextra)) install.packages('factoextra')
+library("factoextra")
+if (!require(ggplot2)) install.packages('ggplot2')
+library("ggplot2")
+if (!require(RColorBrewer)) install.packages('RColorBrewer')
+library("RColorBrewer")
+if (!require(readxl)) install.packages('readxl')
+library("readxl")
+set.seed(42) 
+```
+
+
+```{r datos}
+#Importar datos
+datos <- read_excel("datos/datos.xlsx",
+                    sheet = "datos2")
+
+clean_data<-within(datos,rm(feretX_h,feretY_h,feretAngle_h,feretX_e,feretY_e,feretAngle_e))
+
+datos1<-within(clean_data,rm(area_hh,area_eh,area_hs,area_es,area_hb,area_eb,area_hr,area_er,area_hg,area_eg,area_hB,area_eB))
+```
+
+```{r}
+#Seleccionar datos para el análisis
+data_pca <- datos1[,c(3, 10:length(names(datos1)))]
+data_pca$variedad <- as.factor(data_pca$variedad)
+```
+
+# Dimensiones PCA
+
+```{r}
+res.pca <- PCA(data_pca[,-1],  graph = FALSE)
+get_eig(res.pca)
+```
+
+# Porcentaje de varianza explicado por cada dimensión
+
+```{r}
+fviz_screeplot(res.pca, addlabels = TRUE, ylim = c(0, 70))
+```
+
+# Contribución de las variables por cuadrantes
+
+```{r}
+fviz_pca_var(res.pca, col.var="contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = FALSE )
+```
+
+# Contribuciones de variables a Dim-1
+
+```{r}
+fviz_contrib(res.pca, choice = "var", axes = 1, top = 11)
+```
+
+# Contribuciones de variables a Dim-2
+
+```{r}
+fviz_contrib(res.pca, choice = "var", axes = 2, top = 11)
+```
+
+# Colorear individuos por variedades
+
+```{r}
+fviz_pca_ind(res.pca,  label="none", habillage=as.factor(data_pca$variedad), pointsize = 0.5)
+```
+
+#Biplot de variables y variedades
+
+## Biplot de PC1 y PC2
+
+```{r}
+fviz_pca_biplot(res.pca, axes = c(1,2), 
+                habillage = as.factor(data_pca$variedad), addEllipses = TRUE, 
+                palette = "Set3",
+                col.var = "red", alpha.var ="cos2",geom = "polygon",
+                label = "var") +
+  scale_color_brewer(palette="Set3")+
+  theme_minimal()
+```
+
+
