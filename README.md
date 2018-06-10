@@ -1,2 +1,7 @@
 # Scripts-TFG
-Aquí se encuentran todos los scripts usados en el TFG ''Caracterización Fenotípica y Clasificación de Variedades de Persea americana Mill a partir de Fotografías Digitales''
+## Autor: Eduardo Palma Martín
+## Proyecto:
+Trabajo de Fin en Grado en Biología de la Universidad de Málaga: "Caracterización Fenotípica y Clasificación de Variedades de Persea americana Mill a partir de Fotografías Digitales".
+## Fecha: 20-Junio-2018
+## Descripción:
+Scripts en lenguaje R para el análisis de datos morfométricos y de color de un set de hojas de Persea americana Mill.
